@@ -18,6 +18,14 @@ export const register = async ({ userName, nombre, email, password }) => {
             return mensaje(400, "Email duplicado");
         }
 
+        const userNameSnapshot = await db.collection("usuarios")
+            .where("userName", "==", userName)
+            .limit(1)
+            .get();
+
+        if (!userNameSnapshot.empty) {
+            return mensaje(400, "El nombre de usuario ya está registrado");
+        }
         // Crear el usuario en Firebase Authentication
         const usuarioCreado = await auth.createUser({
             email,
@@ -30,6 +38,7 @@ export const register = async ({ userName, nombre, email, password }) => {
         const dataUser = {
             userName,
             nombre,
+            rol: "Cocinero Amateur",
             email,
             tipoUsuario: "Usuario", // Puedes ajustarlo si es un admin u otro tipo de usuario
         };
@@ -119,7 +128,7 @@ export const buscarUsuario = async (id) => {
 };
 
 export const borrarUsuario = async (id) => {
-    try { 
+    try {
         // Eliminar el usuario de Firebase Authentication
         await auth.deleteUser(id);
 

@@ -49,13 +49,20 @@ router.get("/Administradores", verificarToken, adminAutorizado, (req, res) => {
 });
 
 
-router.get('/usuariosBusc/:id', async (req, res) => {
-    const respuesta = await buscarUsuario(req.params.id);
-    res.status(respuesta.status).json({
-        Mensaje: respuesta.mensajeUsuario,
-        Usuarios: respuesta.mensajeOriginal
-    });
+router.get('/usuariosBusc',verificarToken, async (req, res) => {
+    try {
+        const userId = req.user._id; // Extrae el ID desde `req.user`
+        const respuesta = await buscarUsuario(userId);
+        
+        res.status(respuesta.status).json({
+            Mensaje: respuesta.mensajeUsuario,
+            Usuarios: respuesta.mensajeOriginal
+        });
+    } catch (error) {
+        res.status(500).json({ Mensaje: "Error al buscar usuario", Error: error.message });
+    }
 });
+
 
 router.delete('/usuarioBorr/:id', async (req, res) => {
     console.log(req.params.id);
