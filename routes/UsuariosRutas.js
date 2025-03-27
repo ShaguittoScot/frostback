@@ -29,7 +29,7 @@ router.post("/login", async (req, res) => {
     }).status(respuesta.status).json({
         mensajeUsuario: 'Bienvenido ' + respuesta.usuario,
         mensajeOriginal: respuesta.mensajeOriginal,
-        token: respuesta.token, // Asegúrate de devolverlo también en el cuerpo
+        //token: respuesta.token, // Asegúrate de devolverlo también en el cuerpo
       } );
 });
 
@@ -66,6 +66,8 @@ router.get('/usuariosBusc',verificarToken, async (req, res) => {
         res.status(500).json({ Mensaje: "Error al buscar usuario", Error: error.message });
     }
 });
+
+
 
 
 router.delete('/usuarioBorr/:id', async (req, res) => {
