@@ -18,14 +18,13 @@ async function conexionDB() {
 conexionDB();  // Ejecutamos la conexión antes de iniciar el servidor
 
 // Configuración de CORS
-const corsOptions = {
-    origin: process.env.NODE_ENV === 'development' ? '*' : 'https://tu-frontend-url.com',  // Permitir todos los orígenes en desarrollo
+app.use(cors({
+    origin: "*",  // Permite cualquier origen (solo para desarrollo)
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,  // Permitir envío de cookies
-  };
-  
-  app.use(cors(corsOptions));
+    credentials: true,
+}));
+
   
 
 
