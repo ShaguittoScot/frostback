@@ -19,7 +19,7 @@ conexionDB();  // Ejecutamos la conexión antes de iniciar el servidor
 
 // Configuración de CORS
 app.use(cors({
-    origin: "*",  // Permite cualquier origen (solo para desarrollo)
+    origin: "http://localhost:3000",  // Permite cualquier origen (solo para desarrollo)
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
