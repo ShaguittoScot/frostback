@@ -18,12 +18,16 @@ async function conexionDB() {
 conexionDB();  // Ejecutamos la conexión antes de iniciar el servidor
 
 // Configuración de CORS
-app.use(cors({
-    origin: "*",  // Permitir cualquier origen
-    methods: ["GET", "POST", "PUT", "DELETE"],  // Métodos permitidos
-    allowedHeaders: ["Content-Type", "Authorization"],  // Encabezados permitidos
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'development' ? '*' : 'https://tu-frontend-url.com',  // Permitir todos los orígenes en desarrollo
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,  // Permitir envío de cookies
-}));
+  };
+  
+  app.use(cors(corsOptions));
+  
+
 
 // Middleware
 app.use(cookieParser());
