@@ -105,15 +105,7 @@ export const login = async ({ userName, password }) => {
     }
 };
 
-export const mostrarUsuarios = async () => {
-    try {
-        const usuariosSnapshot = await db.collection('usuarios').get();
-        const usuarios = usuariosSnapshot.docs.map(doc => doc.data());
-        return mensaje(200, "Usuarios obtenidos correctamente", usuarios);
-    } catch (error) {
-        return mensaje(500, "Error al obtener usuarios", error);
-    }
-};
+
 
 export const buscarUsuario = async (id) => {
     try {
@@ -165,3 +157,23 @@ export const isAdminAutorizado = async (id) => {
         return false;
     }
 };
+
+export const mostrarUsuarios = async () => {
+    try {
+        const usuariosSnapshot = await db.collection('usuarios').get();
+        const usuarios = usuariosSnapshot.docs.map(doc => doc.data());
+        return mensaje(200, "Usuarios obtenidos correctamente", usuarios);
+    } catch (error) {
+        return mensaje(500, "Error al obtener usuarios", error);
+    }
+};
+
+export const obtenerProductos = async () => {
+    try {
+        const productosSnaoshot = await db.collection('Productos').get();
+        const productos = productosSnaoshot.docs.map(doc => doc.data());
+        return mensaje(200, "Productos obtenidos correctamente", productos);
+    } catch (error) {
+        return mensaje(500, "Error al obtener los productos", error);
+    }
+}

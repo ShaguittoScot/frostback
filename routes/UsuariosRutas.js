@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, mostrarUsuarios, buscarUsuario, borrarUsuario, editarUsuario, } from "../db/usuariosDB.js";
+import { register, login, mostrarUsuarios, buscarUsuario, borrarUsuario, editarUsuario, obtenerProductos } from "../db/usuariosDB.js";
 import { adminAutorizado, verificarToken } from "../midlewares/funcionesPass.js";
 import { mensaje } from "../libs/mensajes.js";
 const router = Router();
@@ -30,19 +30,13 @@ router.post("/login", async (req, res) => {
         mensajeUsuario: 'Bienvenido ' + respuesta.usuario,
         mensajeOriginal: respuesta.mensajeOriginal,
         //token: respuesta.token, // Asegúrate de devolverlo también en el cuerpo
-      } );
-});
-
-router.get("/usuariosMost", async (req, res) => {
-    const respuesta = await mostrarUsuarios();
-    res.status(respuesta.status).json({
-        Mensaje: respuesta.mensajeUsuario,
-        Usuarios: respuesta.mensajeOriginal
     });
 });
 
+
+
 router.get("/usuarioslogeados", verificarToken, (req, res) => {
-    console.log('Usuario logeado:', req.user); 
+    console.log('Usuario logeado:', req.user);
     res.json({ success: true, usuario: req.user });
 });
 
@@ -53,11 +47,11 @@ router.get("/Administradores", verificarToken, adminAutorizado, (req, res) => {
 });
 
 
-router.get('/usuariosBusc',verificarToken, async (req, res) => {
+router.get('/usuariosBusc', verificarToken, async (req, res) => {
     try {
         const userId = req.user._id; // Extrae el ID desde `req.user`
         const respuesta = await buscarUsuario(userId);
-        
+
         res.status(respuesta.status).json({
             Mensaje: respuesta.mensajeUsuario,
             Usuarios: respuesta.mensajeOriginal
@@ -95,5 +89,26 @@ router.get("/salir", async (req, res) => {
     }
 });
 
+router.get("/usuariosMost", async (req, res) => {
+    const respuesta = await mostrarUsuarios();
+    res.status(respuesta.status).json({
+        Mensaje: respuesta.mensajeUsuario,
+        Usuarios: respuesta.mensajeOriginal
+    });
+});
+
+router.get("/inventario", async (req, res) => {
+    try {
+        const respuesta = await obtenerProductos();
+        return res.status(respuesta.status).json({
+            mensaje:respuesta.mensajeUsuario,
+            Productos: respuesta.mensajeOriginal
+        });
+    } catch (error) {
+        return res.status(500).json({
+            mensaje: "Error al obtener los productos"
+        })
+    }
+});
 
 export default router;
