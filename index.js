@@ -19,8 +19,10 @@ conexionDB();  // Ejecutamos la conexión antes de iniciar el servidor
 
 // Configuración de CORS
 app.use(cors({
-    origin: ['http://localhost:3001', 'http://localhost:34332'],  // Asegúrate de que este sea el origen correcto de tu frontend
-    credentials: true,  // Permitir el uso de cookies
+    origin: "*",  // Permitir cualquier origen
+    methods: ["GET", "POST", "PUT", "DELETE"],  // Métodos permitidos
+    allowedHeaders: ["Content-Type", "Authorization"],  // Encabezados permitidos
+    credentials: true,  // Permitir envío de cookies
 }));
 
 // Middleware
