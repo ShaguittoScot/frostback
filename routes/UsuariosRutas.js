@@ -26,7 +26,11 @@ router.post("/login", async (req, res) => {
         secure: false,   // Cambia a `true` si usas HTTPS
         sameSite: "lax",// Permite el envío de cookies en peticiones de diferente origen
         path: "/",       // Asegura que la cookie esté disponible en toda la API        
-    }).status(respuesta.status).json(respuesta.mensajeUsuario);
+    }).status(respuesta.status).json({
+        mensajeUsuario: 'Bienvenido ' + respuesta.usuario,
+        mensajeOriginal: respuesta.mensajeOriginal,
+        token: respuesta.token, // Asegúrate de devolverlo también en el cuerpo
+      } );
 });
 
 router.get("/usuariosMost", async (req, res) => {
