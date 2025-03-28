@@ -3,6 +3,7 @@ import { register, login, mostrarUsuarios, buscarUsuario, borrarUsuario, editarU
 import { adminAutorizado, verificarToken } from "../midlewares/funcionesPass.js";
 import { mensaje } from "../libs/mensajes.js";
 const router = Router();
+import axios from 'axios';
 
 router.post("/register", async (req, res) => {
     console.log(req.body);
@@ -110,5 +111,41 @@ router.get("/inventario", async (req, res) => {
         })
     }
 });
+
+
+router.get("/recetas", async (req, res) => {
+    try {
+        const { ingredientes } = req.query;
+
+        if (!ingredientes) {
+            return res.status(400).json({
+                mensaje: "Debes proporcionar ingredientes en la consulta"
+            });
+        }
+
+        const API_KEY = process.env.SPOONACULAR_API_KEY; // Usa tu API Key de Spoonacular
+        const response = await axios.get(`https://api.spoonacular.com/recipes/findByIngredients`, {
+            params: {
+                ingredients: ingredientes,
+                number: 5,  // Máximo 5 recetas
+                ranking: 1, // Prioriza el uso máximo de ingredientes dados
+                ignorePantry: true, // Ignorar ingredientes básicos
+                apiKey: API_KEY
+            }
+        });
+
+        return res.status(200).json({
+            mensaje: "Recetas encontradas",
+            recetas: response.data
+        });
+
+    } catch (error) {
+        console.error("Error al obtener recetas:", error);
+        return res.status(500).json({
+            mensaje: "Error al obtener recetas"
+        });
+    }
+});
+
 
 export default router;
