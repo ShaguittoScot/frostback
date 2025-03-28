@@ -148,4 +148,36 @@ router.get("/recetas", async (req, res) => {
 });
 
 
+router.get("/recetabusc/:id", async (req, res) => {
+    try {
+        const { id } = req.params;  // Capturamos el ID de la URL
+
+        if (!id) {
+            return res.status(400).json({
+                mensaje: "Debes proporcionar un ID de receta válido"
+            });
+        }
+
+        const API_KEY = process.env.SPOONACULAR_API_KEY; // Usa tu API Key de Spoonacular
+        const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information`, {
+            params: {
+                apiKey: API_KEY
+            }
+        });
+
+        return res.status(200).json({
+            mensaje: "Receta encontrada",
+            receta: response.data
+        });
+
+    } catch (error) {
+        console.error("Error al obtener receta:", error);
+        return res.status(500).json({
+            mensaje: "Error al obtener receta"
+        });
+    }
+});
+
+
+
 export default router;
