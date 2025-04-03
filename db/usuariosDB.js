@@ -105,7 +105,26 @@ export const login = async ({ userName, password }) => {
     }
 };
 
+export const obtenerTemperatura = async () => {
+    try {
+        // Obtener la última lectura de la colección
+        const snapshot = await db.collection("lecturas_sensor")
+            .orderBy("Timestamp", "desc")
+            .limit(1)
+            .get();
 
+        if (snapshot.empty) {
+            return mensaje(404, "No se encontraron datos de temperatura");
+        }
+
+        const ultimaLectura = snapshot.docs[0].data();
+        return mensaje(200, "Temperatura obtenida", ultimaLectura);
+
+    } catch (error) {
+        console.log("Error al obtener la temperatura:", error);
+        return mensaje(500, "Error al obtener la temperatura");
+    }
+};
 
 export const buscarUsuario = async (id) => {
     try {

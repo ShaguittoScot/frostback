@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { register, login, mostrarUsuarios, buscarUsuario, borrarUsuario, editarUsuario, obtenerProductos } from "../db/usuariosDB.js";
+import { register, login, mostrarUsuarios, buscarUsuario, borrarUsuario, editarUsuario, obtenerProductos, obtenerTemperatura } from "../db/usuariosDB.js";
 import { adminAutorizado, verificarToken } from "../midlewares/funcionesPass.js";
 import { mensaje } from "../libs/mensajes.js";
 const router = Router();
@@ -15,6 +15,18 @@ router.post("/register", async (req, res) => {
         path: "/",       // Asegura que la cookie esté disponible en toda la API        
     }).status(respuesta.status).json(respuesta.mensajeUsuario);
 });
+
+
+router.get("/obtenerTemp", async (req, res) => { 
+    console.log("Obteniendo temperatura...");
+    const respuesta = await obtenerTemperatura();
+
+    res.status(respuesta.status).json({
+        mensajeUsuario: respuesta.mensajeUsuario, // Mensaje amigable para el usuario
+        datos: respuesta.mensajeOriginal // Aquí enviamos los datos obtenidos de la base de datos
+    });
+});
+
 
 router.post("/login", async (req, res) => {
     console.log("estas en login");
@@ -158,7 +170,7 @@ router.get("/recetabusc/:id", async (req, res) => {
             });
         }
 
-        const API_KEY = process.env.SPOONACULAR_API_KEY; // Usa tu API Key de Spoonacular
+        const API_KEY = process.env.SPOONACULAR_API_KEY; 
         const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information`, {
             params: {
                 apiKey: API_KEY
@@ -177,6 +189,8 @@ router.get("/recetabusc/:id", async (req, res) => {
         });
     }
 });
+
+
 
 
 
