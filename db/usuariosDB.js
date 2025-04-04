@@ -203,7 +203,7 @@ export const obtenerProductos = async () => {
 export const obtenerFrutasyV = async () => {
     try {
         const frutasyVSnapshot = await db.collection('predicciones').get();
-        const frutasyV = frutasyVSnapshot.docs.map(doc => doc.data());
+        const frutasyV = frutasyVSnapshot.docs.map(doc => ({id: doc.id,...doc.data()}));
         return mensaje(200, "Verduras y frutas obtenidas correctamente", frutasyV);
     } catch (error) {
         return mensaje(500, "Error al obtener verduras y frutas", error);
