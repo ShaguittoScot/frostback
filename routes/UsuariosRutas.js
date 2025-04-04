@@ -140,18 +140,17 @@ router.get("/obtenerFrutasyV", async (req, res) => {
     try {
         const respuesta = await obtenerFrutasyV();
 
-        const frutasConNombreEImagen = await Promise.all(
-            respuesta.mensajeOriginal.map(async (item) => {
-                const nombre = obtenerNombreSimple(item.prediccion); // "Banana fresca" → "Banana"
-                const imagen = await obtenerImagenDesdeOFF(nombre);
+        const frutasConNombreEImagen = respuesta.mensajeOriginal.map((item) => {
+            const { nombre, estado } = extraerNombreYEstado(item.prediccion);
+            const imagen = obtenerImagenPredefinida(nombre, estado);
 
-                return {
-                    ...item,
-                    nombre, // nuevo campo con el nombre simple
-                    imagen  // imagen obtenida de Open Food Facts
-                };
-            })
-        );
+            return {
+                ...item,
+                nombre, // nombre de la fruta (Banana, Naranja, Manzana)
+                estado, // estado de la fruta (fresca, madura, podrida)
+                imagen  // imagen predefinida según fruta y estado
+            };
+        });
 
         return res.status(respuesta.status).json({
             mensaje: respuesta.mensajeUsuario,
@@ -166,29 +165,48 @@ router.get("/obtenerFrutasyV", async (req, res) => {
     }
 });
 
-function obtenerNombreSimple(prediccion) {
-    // Retorna solo la primera palabra en mayúscula
-    if (!prediccion) return "Fruta";
-    const primeraPalabra = prediccion.trim().split(" ")[0];
-    return primeraPalabra.charAt(0).toUpperCase() + primeraPalabra.slice(1).toLowerCase();
+function extraerNombreYEstado(prediccion) {
+    if (!prediccion) return { nombre: "Fruta", estado: "fresca" };
+    
+    // Divide la predicción en palabras y normaliza
+    const palabras = prediccion.trim().toLowerCase().split(" ");
+    const nombre = palabras[0];
+    const estado = palabras[1] || "fresca"; // Estado por defecto si no se especifica
+
+    // Capitaliza la primera letra del nombre
+    const nombreCapitalizado = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+
+    return {
+        nombre: nombreCapitalizado,
+        estado: estado.toLowerCase()
+    };
 }
 
-async function obtenerImagenDesdeOFF(nombre) {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(nombre)}&json=1`;
-
-    try {
-        const respuesta = await axios.get(url);
-        const productos = respuesta.data.products;
-
-        if (productos.length > 0 && productos[0].image_url) {
-            return productos[0].image_url;
-        } else {
-            return "https://upload.wikimedia.org/wikipedia/commons/6/6f/Fruit_and_vegetables.jpg"; // Imagen por defecto
+function obtenerImagenPredefinida(nombre, estado) {
+    // Diccionario de imágenes predefinidas
+    const imagenes = {
+        Banana: {
+            fresca: "https://images5.alphacoders.com/376/thumb-1920-376700.jpg",
+            madura: "https://th.bing.com/th/id/OIP.pJRYubEgk2bqKWEtGdFjrQHaHa?rs=1&pid=ImgDetMain",
+            podrida: "https://th.bing.com/th/id/OIP.4sEPvtxEIinudZMMgH3xAQHaFQ?rs=1&pid=ImgDetMain"
+        },
+        Naranja: {
+            fresca: "https://amanecerhuasteco.com/portal/wp-content/uploads/2018/06/23-6-18-naranja1.jpg",
+            madura: "https://images.pexels.com/photos/4552444/pexels-photo-4552444.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260",
+            podrida: "https://thumbs.dreamstime.com/b/rotten-orange-oranges-beginning-to-spoil-will-become-soft-first-then-develop-white-mold-quickly-spread-188461573.jpg"
+        },
+        Manzana: {
+            fresca: "https://images.heb.com/is/image/HEBGrocery/000320637",
+            madura: "https://th.bing.com/th/id/OIP.1FJm93ElANv1prn5Mp11EQHaIJ?rs=1&pid=ImgDetMain",
+            podrida: "https://thumbs.dreamstime.com/b/una-manzana-podrida-e-incomestible-aislado-en-un-fondo-blanco-173874993.jpg"
         }
-    } catch (error) {
-        console.error("Error obteniendo imagen de OFF:", error.message);
-        return "https://upload.wikimedia.org/wikipedia/commons/6/6f/Fruit_and_vegetables.jpg";
-    }
+    };
+
+    // Imagen por defecto si no se encuentra la combinación
+    const imagenPorDefecto = "https://upload.wikimedia.org/wikipedia/commons/6/6f/Fruit_and_vegetables.jpg";
+
+    // Busca la imagen correspondiente o devuelve la por defecto
+    return imagenes[nombre]?.[estado] || imagenPorDefecto;
 }
 
 
