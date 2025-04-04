@@ -1,5 +1,14 @@
 import { Router } from "express";
-import { register, login, mostrarUsuarios, buscarUsuario, borrarUsuario, editarUsuario, obtenerProductos, obtenerTemperatura } from "../db/usuariosDB.js";
+import {
+    register, login, mostrarUsuarios,
+    buscarUsuario,
+    borrarUsuario,
+    editarUsuario,
+    obtenerProductos,
+    obtenerTemperatura,
+    obtenerFrutasyV,
+    eliminarProducto
+} from "../db/usuariosDB.js";
 import { adminAutorizado, verificarToken } from "../midlewares/funcionesPass.js";
 import { mensaje } from "../libs/mensajes.js";
 const router = Router();
@@ -17,7 +26,7 @@ router.post("/register", async (req, res) => {
 });
 
 
-router.get("/obtenerTemp", async (req, res) => { 
+router.get("/obtenerTemp", async (req, res) => {
     console.log("Obteniendo temperatura...");
     const respuesta = await obtenerTemperatura();
 
@@ -114,7 +123,7 @@ router.get("/inventario", async (req, res) => {
     try {
         const respuesta = await obtenerProductos();
         return res.status(respuesta.status).json({
-            mensaje:respuesta.mensajeUsuario,
+            mensaje: respuesta.mensajeUsuario,
             Productos: respuesta.mensajeOriginal
         });
     } catch (error) {
@@ -123,6 +132,62 @@ router.get("/inventario", async (req, res) => {
         })
     }
 });
+
+
+router.get("/obtenerFrutasyV", async (req, res) => {
+    try {
+        const respuesta = await obtenerFrutasyV();
+
+        const frutasConNombreEImagen = await Promise.all(
+            respuesta.mensajeOriginal.map(async (item) => {
+                const nombre = obtenerNombreSimple(item.prediccion); // "Banana fresca" → "Banana"
+                const imagen = await obtenerImagenDesdeOFF(nombre);
+
+                return {
+                    ...item,
+                    nombre, // nuevo campo con el nombre simple
+                    imagen  // imagen obtenida de Open Food Facts
+                };
+            })
+        );
+
+        return res.status(respuesta.status).json({
+            mensaje: respuesta.mensajeUsuario,
+            FrutasyV: frutasConNombreEImagen
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            mensaje: "Error al obtener los productos",
+            Error: error.message
+        });
+    }
+});
+
+function obtenerNombreSimple(prediccion) {
+    // Retorna solo la primera palabra en mayúscula
+    if (!prediccion) return "Fruta";
+    const primeraPalabra = prediccion.trim().split(" ")[0];
+    return primeraPalabra.charAt(0).toUpperCase() + primeraPalabra.slice(1).toLowerCase();
+}
+
+async function obtenerImagenDesdeOFF(nombre) {
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(nombre)}&json=1`;
+
+    try {
+        const respuesta = await axios.get(url);
+        const productos = respuesta.data.products;
+
+        if (productos.length > 0 && productos[0].image_url) {
+            return productos[0].image_url;
+        } else {
+            return "https://upload.wikimedia.org/wikipedia/commons/6/6f/Fruit_and_vegetables.jpg"; // Imagen por defecto
+        }
+    } catch (error) {
+        console.error("Error obteniendo imagen de OFF:", error.message);
+        return "https://upload.wikimedia.org/wikipedia/commons/6/6f/Fruit_and_vegetables.jpg";
+    }
+}
 
 
 router.get("/recetas", async (req, res) => {
@@ -170,7 +235,7 @@ router.get("/recetabusc/:id", async (req, res) => {
             });
         }
 
-        const API_KEY = process.env.SPOONACULAR_API_KEY; 
+        const API_KEY = process.env.SPOONACULAR_API_KEY;
         const response = await axios.get(`https://api.spoonacular.com/recipes/${id}/information`, {
             params: {
                 apiKey: API_KEY
@@ -191,7 +256,29 @@ router.get("/recetabusc/:id", async (req, res) => {
 });
 
 
+router.get("/eliminarProducto/:id", async (req, res) => {
+    try {
+        const { id } = req.params;  // Capturamos el ID de la URL
 
+        if (!id) {
+            return res.status(400).json({
+                mensaje: "Debes proporcionar un ID de producto válido"
+            });
+        }
+
+        const respuesta = await eliminarProducto(id);
+
+        return res.status(respuesta.status).json({
+            mensaje: respuesta.mensajeUsuario,
+            productoEliminado: respuesta.mensajeOriginal
+        });
+    } catch (error) {
+        console.error("Error al eliminar producto:", error);
+        return res.status(500).json({
+            mensaje: "Error al eliminar producto"
+        });
+    }
+});
 
 
 export default router;

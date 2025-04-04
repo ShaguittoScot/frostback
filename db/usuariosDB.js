@@ -190,9 +190,31 @@ export const mostrarUsuarios = async () => {
 export const obtenerProductos = async () => {
     try {
         const productosSnaoshot = await db.collection('Productos').get();
-        const productos = productosSnaoshot.docs.map(doc => doc.data());
+        const productos = productosSnaoshot.docs.map(doc => ({
+            id: doc.id,                // Aquí obtenemos el ID del documento
+            ...doc.data()              // Y todo lo demás (nombre, categoría, etc.)
+        }));        
         return mensaje(200, "Productos obtenidos correctamente", productos);
     } catch (error) {
         return mensaje(500, "Error al obtener los productos", error);
     }
 }
+
+export const obtenerFrutasyV = async () => {
+    try {
+        const frutasyVSnapshot = await db.collection('predicciones').get();
+        const frutasyV = frutasyVSnapshot.docs.map(doc => doc.data());
+        return mensaje(200, "Verduras y frutas obtenidas correctamente", frutasyV);
+    } catch (error) {
+        return mensaje(500, "Error al obtener verduras y frutas", error);
+    }
+};
+
+export const eliminarProducto = async (id) => {
+    try {
+        await db.collection('Productos').doc(id).delete();
+        return mensaje(200, "Producto eliminado correctamente");
+    } catch (error) {
+        return mensaje(500, "Error al eliminar producto", error);
+    }
+} 
