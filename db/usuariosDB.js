@@ -219,6 +219,15 @@ export const eliminarProducto = async (id) => {
     }
 } 
 
+export const eliminarFrutasyV = async (id) => {
+    try {
+        await db.collection('predicciones').doc(id).delete();
+        return mensaje(200, "Fruta o verdura eliminada correctamente");
+    } catch (error) {
+        return mensaje(500, "Error al eliminar fruta o verdura", error);
+    }
+}
+
 export const obtenerProductosEnBuenEstado = async () => { 
     try { 
         const hoy = new Date();

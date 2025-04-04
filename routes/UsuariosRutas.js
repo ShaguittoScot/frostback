@@ -8,7 +8,8 @@ import {
     obtenerTemperatura,
     obtenerFrutasyV,
     eliminarProducto,
-    obtenerProductosEnBuenEstado
+    obtenerProductosEnBuenEstado,
+    eliminarFrutasyV
 } from "../db/usuariosDB.js";
 import { adminAutorizado, verificarToken } from "../midlewares/funcionesPass.js";
 import { mensaje } from "../libs/mensajes.js";
@@ -268,6 +269,30 @@ router.delete("/eliminarProducto/:id", async (req, res) => {
         }
 
         const respuesta = await eliminarProducto(id);
+
+        return res.status(respuesta.status).json({
+            mensaje: respuesta.mensajeUsuario,
+            productoEliminado: respuesta.mensajeOriginal
+        });
+    } catch (error) {
+        console.error("Error al eliminar producto:", error);
+        return res.status(500).json({
+            mensaje: "Error al eliminar producto"
+        });
+    }
+});
+
+router.delete("/eliminarFrutasyV/:id", async (req, res) => {
+    try {
+        const { id } = req.params;  // Capturamos el ID de la URL
+
+        if (!id) {
+            return res.status(400).json({
+                mensaje: "Debes proporcionar un ID de producto válido"
+            });
+        }
+
+        const respuesta = await eliminarFrutasyV(id);
 
         return res.status(respuesta.status).json({
             mensaje: respuesta.mensajeUsuario,
