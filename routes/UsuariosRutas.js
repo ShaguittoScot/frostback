@@ -256,7 +256,7 @@ router.get("/recetabusc/:id", async (req, res) => {
 });
 
 
-router.get("/eliminarProducto/:id", async (req, res) => {
+router.delete("/eliminarProducto/:id", async (req, res) => {
     try {
         const { id } = req.params;  // Capturamos el ID de la URL
 
