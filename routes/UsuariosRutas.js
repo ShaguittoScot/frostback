@@ -7,7 +7,8 @@ import {
     obtenerProductos,
     obtenerTemperatura,
     obtenerFrutasyV,
-    eliminarProducto
+    eliminarProducto,
+    obtenerProductosEnBuenEstado
 } from "../db/usuariosDB.js";
 import { adminAutorizado, verificarToken } from "../midlewares/funcionesPass.js";
 import { mensaje } from "../libs/mensajes.js";
@@ -280,5 +281,20 @@ router.delete("/eliminarProducto/:id", async (req, res) => {
     }
 });
 
+router.get("/listaProductos", async (req, res) => {
+    try {
+        const respuesta = await obtenerProductosEnBuenEstado();
+
+        return res.status(respuesta.status).json({
+            mensaje: respuesta.mensajeUsuario,
+            productos: respuesta.mensajeOriginal
+        });
+    } catch (error) {
+        console.error("Error al obtener productos:", error);
+        return res.status(500).json({
+            mensaje: "Error al obtener productos"
+        });
+    }
+})
 
 export default router;

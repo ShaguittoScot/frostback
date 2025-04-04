@@ -218,3 +218,71 @@ export const eliminarProducto = async (id) => {
         return mensaje(500, "Error al eliminar producto", error);
     }
 } 
+
+export const obtenerProductosEnBuenEstado = async () => { 
+    try { 
+        const hoy = new Date();
+        console.log("Fecha actual:", hoy);
+
+        // Obtener productos no caducos
+        const productosSnapshot = await db.collection('Productos').get();
+        console.log("Productos obtenidos de la BD:", productosSnapshot.docs.length);
+
+        const productos = productosSnapshot.docs.map(doc => {
+            const data = doc.data();
+            console.log("Producto procesado:", data);
+            return {
+                id: doc.id,
+                nombre: data.nombre,
+                fecha_caducidad: data.fecha_caducidad
+            };
+        }).filter(producto => {
+            if (!producto.fecha_caducidad) {
+                console.log("Producto sin fecha de caducidad, se omite:", producto);
+                return false;
+            }
+            const fechaCaducidad = new Date(producto.fecha_caducidad);
+            console.log(`Comparando fechas -> Caducidad: ${fechaCaducidad}, Hoy: ${hoy}`);
+            return fechaCaducidad > hoy;
+        });
+
+        console.log("Productos en buen estado:", productos);
+
+        // Obtener frutas y verduras frescas
+        const frutasyVSnapshot = await db.collection('predicciones').get();
+        console.log("Frutas y verduras obtenidas de la BD:", frutasyVSnapshot.docs.length);
+
+        const prediccionToNombre = {
+            "Banana fresca": "Banana",
+            "Manzana fresca": "Manzana",
+            "Naranja fresca": "Naranja"
+        };
+
+        const frutasyV = frutasyVSnapshot.docs.map(doc => {
+            const data = doc.data();
+            console.log("Fruta/verdura procesada:", data);
+            return {
+                id: doc.id,
+                nombre: prediccionToNombre[data.prediccion] || null
+            };
+        }).filter(item => {
+            if (!item.nombre) {
+                console.log("Predicción no válida, se omite:", item);
+                return false;
+            }
+            return true;
+        });
+
+        console.log("Frutas y verduras en buen estado:", frutasyV);
+
+        // Unir ambas listas
+        const productosEnBuenEstado = [...productos, ...frutasyV];
+
+        console.log("Lista final de productos en buen estado:", productosEnBuenEstado);
+        
+        return mensaje(200, "Productos en buen estado obtenidos correctamente", productosEnBuenEstado);
+    } catch (error) {
+        console.error("Error al obtener los productos en buen estado:", error);
+        return mensaje(500, "Error al obtener los productos en buen estado db", error.message);
+    }
+};
